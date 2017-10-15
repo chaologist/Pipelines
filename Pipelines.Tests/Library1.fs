@@ -4,19 +4,16 @@ open Pipelines
 open Pipelines.Pipeline
 open Pipelines.Attempt
 
-type Class1() = 
+type Tests() = 
     [<Fact>]
     member this.TrivialTest () = 
         ()
 
     [<Fact>]
     member this.ZeroStepTest () = 
-        let pipeline = new PipelineBuilder()
-
         let d s =pipeline {   
                     return s
                 }
-        
         let att=d 3
         let r = att()
         Xunit.Assert.Equal(Success(3),r)
@@ -24,9 +21,7 @@ type Class1() =
 
     [<Fact>]
     member this.MultiStepTest () = 
-        let pipeline = new PipelineBuilder()
         let add1 x = x + 1
-
         let d (s:int) =pipeline { 
                     let! f = s >?> add1
                     let! g = f >?> add1 
@@ -42,7 +37,6 @@ type Class1() =
 
     [<Fact>]
     member this.MultiStepFailTest () = 
-        let pipeline = new Pipeline.PipelineBuilder()
         let mutable count = 0;
         let add1 x = 
                 count<-count+1
@@ -66,7 +60,6 @@ type Class1() =
 
     [<Fact>]
     member this.MultiStepDelayTest () = 
-        let pipeline = new Pipeline.PipelineBuilder()
         let mutable count = 0;
         let add1 x = 
                 count<-count+1
@@ -90,7 +83,6 @@ type Class1() =
 
     [<Fact>]
     member this.OneStepTest () = 
-        let pipeline = new Pipeline.PipelineBuilder()
         let add1 x = x + 1
 
         let d (s:int) =pipeline { 
@@ -106,7 +98,6 @@ type Class1() =
 
     [<Fact>]
     member this.FailTest () = 
-        let pipeline = new Pipeline.PipelineBuilder()
         let ex = new System.Exception();
         let add1 x = raise ex
 
@@ -122,8 +113,6 @@ type Class1() =
     
     [<Fact>]
     member this.ReturnDirect () = 
-        let pipeline = new Pipeline.PipelineBuilder()
-
         let d (s:int) =pipeline { 
                     return! fun ()->Success(s)
                 }
