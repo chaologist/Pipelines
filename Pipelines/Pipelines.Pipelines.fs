@@ -20,7 +20,20 @@ module Attempt=
 
     let (>?>) x f =
         Attempt f x
-    
+
+module UnitOfWork=
+    let MakeAtomic (attempt:Attempt<'t>) : Attempt<'t> =
+        let transact () =
+            use scope = new System.Transactions.TransactionScope()
+            let res =attempt()
+            match res with
+                | Success(s)->
+                    scope.Complete()
+                | _->
+                    ()
+            res
+        transact 
+
 
 module PipelineBuilder=
 
