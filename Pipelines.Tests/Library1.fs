@@ -11,12 +11,13 @@ type Tests() =
 
     [<Fact>]
     member this.ZeroStepTest () = 
-        let d s =pipeline {   
-                    return s
+        let add1 x = x+1
+        let d s =pipeline {
+                    let! gg = s >?> add1 
+                    return gg
                 }
-        let att=d 3
-        let r = att()
-        Xunit.Assert.Equal(Success(3),r)
+        let att=d 2
+        Xunit.Assert.Equal(Success(3),att)
         ()
 
     [<Fact>]
@@ -30,8 +31,7 @@ type Tests() =
                     return h
                 }
         
-        let att=d 3
-        let r = att()
+        let r=d 3
         Xunit.Assert.Equal(Success(6),r)
         ()
 
@@ -52,32 +52,9 @@ type Tests() =
                     return h
                 }
         
-        let att=d 3
-        let r = att ()
+        let r=d 3
         Xunit.Assert.Equal(Failure(ex),r)
         Xunit.Assert.Equal(1,count)
-        ()
-
-    [<Fact>]
-    member this.MultiStepDelayTest () = 
-        let mutable count = 0;
-        let add1 x = 
-                count<-count+1
-                x + 1
-
-        let d (s:int) =pipeline { 
-                    let! f = s >?> add1 
-                    let! g = f >?> add1 
-                    let! h = g >?> add1 
-
-                    return h
-                }
-
-        Xunit.Assert.Equal(0,count)        
-        let att=d 3
-        Xunit.Assert.Equal(0,count)        
-        let r = att()
-        Xunit.Assert.Equal(3,count)
         ()
 
 
@@ -90,8 +67,7 @@ type Tests() =
                     return f
                 }
         
-        let att=d 3
-        let r =  att()
+        let r=d 3
         Xunit.Assert.Equal(Success(4),r)
         ()
 
@@ -106,19 +82,22 @@ type Tests() =
                     return f
                 }
         
-        let att=d 3
-        let r = att()
+        let r=d 3
+        Xunit.Assert.Equal(Failure(ex),r)
+        ()
+    [<Fact>]
+    member this.FailureStopsPipeTest () = 
+        let ex = new System.Exception();
+        let add1 x = raise ex
+        let add2 x = x + 2
+
+        let d (s:int) =pipeline { 
+                    let! f = s >?> add1 
+                    let! g = f >?> add2
+                    return g
+                }
+        
+        let r=d 3
         Xunit.Assert.Equal(Failure(ex),r)
         ()
     
-    [<Fact>]
-    member this.ReturnDirect () = 
-        let d (s:int) =pipeline { 
-                    return! fun ()->Success(s)
-                }
-        
-        let att=d 3
-        let r = att()
-        Xunit.Assert.Equal(Success(3),r)
-        ()
-
